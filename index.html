@@ -1,0 +1,1436 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>DIGIT 교실판</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Black+Han+Sans&family=IBM+Plex+Sans+KR:wght@400;500;600;700&display=swap">
+<style>
+*, *::before, *::after { box-sizing: border-box; }
+[hidden] { display: none !important; }
+html, body { height: 100%; }
+
+:root {
+  /* Layout: projector-first stage. The board takes the room, a narrow control rail sits on the right, and the five sticks are the only colour on screen. */
+  --bg: #e7ebef;
+  --surface: #ffffff;
+  --surface-2: #f1f3f6;
+  --board: #fcfdfe;
+  --grid: #dde2e8;
+  --grid-strong: #b6bfca;
+  --dot: #9aa5b1;
+  --ink: #131a22;
+  --muted: #5a6572;
+  --line: #d3d9e0;
+  --on-ink: #ffffff;
+  --seg-off: #e1e5ea;
+  --scrim: rgba(19, 26, 34, .45);
+  --shadow: 0 1px 2px rgba(19, 26, 34, .06), 0 10px 30px rgba(19, 26, 34, .07);
+  --stick-shadow: rgba(10, 14, 20, .28);
+
+  --red: #e0443a;
+  --yellow: #f2c12e;
+  --green: #2a9853;
+  --blue: #2b72d4;
+  --purple: #864fcb;
+
+  --font-display: "Black Han Sans", "Malgun Gothic", "Apple SD Gothic Neo", sans-serif;
+  --font-body: "IBM Plex Sans KR", "Apple SD Gothic Neo", "Malgun Gothic", "Noto Sans KR", system-ui, sans-serif;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg: #0e1115;
+    --surface: #161a20;
+    --surface-2: #1c2129;
+    --board: #11151a;
+    --grid: #232932;
+    --grid-strong: #3b4450;
+    --dot: #4b5562;
+    --ink: #e8ecf1;
+    --muted: #98a3b0;
+    --line: #29303a;
+    --on-ink: #0e1115;
+    --seg-off: #232932;
+    --scrim: rgba(0, 0, 0, .62);
+    --shadow: 0 1px 2px rgba(0, 0, 0, .4), 0 10px 30px rgba(0, 0, 0, .35);
+    --stick-shadow: rgba(0, 0, 0, .55);
+    --red: #ef5449;
+    --yellow: #f5c93f;
+    --green: #35b064;
+    --blue: #4a8df0;
+    --purple: #a06ce6;
+    color-scheme: dark;
+  }
+}
+:root[data-theme="dark"] {
+  --bg: #0e1115;
+  --surface: #161a20;
+  --surface-2: #1c2129;
+  --board: #11151a;
+  --grid: #232932;
+  --grid-strong: #3b4450;
+  --dot: #4b5562;
+  --ink: #e8ecf1;
+  --muted: #98a3b0;
+  --line: #29303a;
+  --on-ink: #0e1115;
+  --seg-off: #232932;
+  --scrim: rgba(0, 0, 0, .62);
+  --shadow: 0 1px 2px rgba(0, 0, 0, .4), 0 10px 30px rgba(0, 0, 0, .35);
+  --stick-shadow: rgba(0, 0, 0, .55);
+  --red: #ef5449;
+  --yellow: #f5c93f;
+  --green: #35b064;
+  --blue: #4a8df0;
+  --purple: #a06ce6;
+  color-scheme: dark;
+}
+
+body {
+  margin: 0;
+  background: var(--bg);
+  color: var(--ink);
+  font-family: var(--font-body);
+  font-size: 15px;
+  line-height: 1.5;
+  word-break: keep-all;
+  -webkit-font-smoothing: antialiased;
+}
+#app { height: 100%; }
+
+/* ---------- shared controls ---------- */
+.btn {
+  appearance: none;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  min-height: 40px;
+  padding: 8px 14px;
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  background: var(--surface);
+  color: var(--ink);
+  font: 600 14px/1.2 var(--font-body);
+  cursor: pointer;
+  transition: background-color .15s, border-color .15s, transform .08s, opacity .15s;
+}
+.btn:hover { border-color: var(--grid-strong); background: var(--surface-2); }
+.btn:active { transform: translateY(1px); }
+.btn:disabled { opacity: .4; cursor: not-allowed; transform: none; }
+.btn-primary, .btn-primary:hover, .btn[aria-pressed="true"] {
+  background: var(--ink);
+  border-color: var(--ink);
+  color: var(--on-ink);
+}
+.btn-primary:hover:not(:disabled) { opacity: .88; }
+.btn-xl {
+  min-height: 62px;
+  border-radius: 14px;
+  font-family: var(--font-display);
+  font-weight: 400;
+  font-size: 22px;
+  letter-spacing: .02em;
+}
+kbd {
+  font: 600 11px/1 var(--font-body);
+  padding: 3px 5px;
+  border: 1px solid currentColor;
+  border-radius: 5px;
+  opacity: .55;
+}
+.btn-xl kbd { font-size: 12px; }
+:focus-visible { outline: 3px solid var(--ink); outline-offset: 2px; }
+.spacer { flex: 1; }
+.eyebrow {
+  margin: 0;
+  font-size: 12px;
+  font-weight: 600;
+  letter-spacing: .08em;
+  color: var(--muted);
+}
+.muted { color: var(--muted); }
+
+/* hand of cards (success meter) */
+.hand { display: flex; gap: 6px; }
+.card {
+  position: relative;
+  flex: none;
+  width: 28px;
+  height: 40px;
+  border: 1.5px solid var(--grid-strong);
+  border-radius: 5px;
+  background: repeating-linear-gradient(135deg, var(--surface-2) 0 4px, var(--surface) 4px 8px);
+}
+.card.won { background: var(--ink); border-color: var(--ink); }
+.card.won::after {
+  content: "";
+  position: absolute;
+  left: 50%;
+  top: 46%;
+  width: 28%;
+  height: 46%;
+  border: solid var(--on-ink);
+  border-width: 0 2px 2px 0;
+  transform: translate(-50%, -55%) rotate(45deg);
+}
+.card.new { background: transparent; border-style: dashed; border-color: var(--ink); }
+.card.new::after {
+  content: "+";
+  position: absolute;
+  inset: 0;
+  display: grid;
+  place-items: center;
+  font: 700 22px/1 var(--font-body);
+  color: var(--ink);
+}
+.hand.small { gap: 4px; }
+.hand.small .card { width: 16px; height: 23px; border-radius: 3px; }
+.hand.big { gap: 8px; }
+.hand.big .card { width: 44px; height: 62px; border-radius: 7px; }
+
+/* seven-segment score digits */
+.t-score { display: flex; gap: 3px; height: 32px; }
+.seg { height: 100%; width: auto; }
+.seg rect { fill: var(--seg-off); }
+.seg rect.on { fill: var(--seg-on, var(--ink)); }
+
+/* ---------- setup ---------- */
+.setup {
+  min-height: 100%;
+  display: grid;
+  align-items: center;
+  padding-block: clamp(24px, 6vh, 64px);
+  padding-inline: clamp(16px, 4vw, 48px);
+}
+.setup-inner {
+  width: 100%;
+  max-width: 1080px;
+  margin-inline: auto;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1.15fr);
+  gap: clamp(28px, 5vw, 72px);
+  align-items: center;
+}
+.brand-block { display: grid; gap: 18px; align-content: center; }
+.wordmark {
+  margin: 0;
+  font-family: var(--font-display);
+  font-weight: 400;
+  font-size: clamp(72px, 11vw, 136px);
+  line-height: .88;
+  letter-spacing: .03em;
+}
+.brand-sub { margin: 0; font-size: 18px; color: var(--muted); max-width: 30ch; text-wrap: pretty; }
+.preview {
+  width: min(100%, 380px);
+  max-width: 100%;
+  aspect-ratio: 10 / 7;
+  background: var(--board);
+  border: 1px solid var(--line);
+  border-radius: 16px;
+  overflow: hidden;
+}
+.preview svg { display: block; width: 100%; height: 100%; }
+.preview-cap { margin: -8px 0 0; font-size: 13px; color: var(--muted); }
+
+.setup-form {
+  display: grid;
+  gap: 24px;
+  padding: clamp(20px, 3vw, 32px);
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: 18px;
+  box-shadow: var(--shadow);
+  min-width: 0;
+}
+fieldset { margin: 0; padding: 0; border: 0; min-width: 0; }
+.field-label {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 4px 10px;
+  margin: 0 0 10px;
+  padding: 0;
+  font-size: 13px;
+  font-weight: 700;
+  letter-spacing: .06em;
+  color: var(--muted);
+}
+.field-label span { font-weight: 500; letter-spacing: 0; }
+.count-group { display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); gap: 8px; }
+.count-btn {
+  min-height: 60px;
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  background: var(--surface-2);
+  color: var(--ink);
+  font: 400 26px/1 var(--font-display);
+  cursor: pointer;
+  display: grid;
+  place-items: center;
+  gap: 2px;
+  transition: background-color .15s, border-color .15s;
+}
+.count-btn small { font: 600 11px/1 var(--font-body); color: inherit; opacity: .7; }
+.count-btn:hover { border-color: var(--grid-strong); }
+.count-btn[aria-pressed="true"] { background: var(--ink); border-color: var(--ink); color: var(--on-ink); }
+.names { display: grid; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: 10px; }
+.name-field { display: grid; gap: 4px; font-size: 12px; font-weight: 600; color: var(--muted); }
+.name-field input {
+  width: 100%;
+  padding: 10px 12px;
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  background: var(--surface-2);
+  color: var(--ink);
+  font: 600 16px/1.2 var(--font-body);
+}
+.name-field input::placeholder { color: var(--muted); opacity: .8; }
+.rules {
+  display: grid;
+  gap: 8px;
+  margin: 0;
+  padding: 14px 16px;
+  border-radius: 12px;
+  background: var(--surface-2);
+  font-size: 14px;
+}
+.rules div { display: grid; grid-template-columns: 6.5em minmax(0, 1fr); gap: 12px; }
+.rules dt { font-weight: 700; color: var(--muted); }
+.rules dd { margin: 0; }
+.resume {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 12px;
+  padding: 14px 16px;
+  border: 1px solid var(--ink);
+  border-radius: 12px;
+}
+.resume-text { display: grid; gap: 2px; flex: 1; min-width: 12em; }
+.resume-text span { color: var(--muted); font-size: 14px; }
+.fine { margin: -14px 0 0; font-size: 12px; color: var(--muted); }
+
+/* ---------- game ---------- */
+.game {
+  height: 100%;
+  display: grid;
+  grid-template-rows: auto minmax(0, 1fr);
+  padding-inline: clamp(16px, 2vw, 28px);
+  padding-block: 0 clamp(12px, 2vh, 20px);
+}
+.topbar, .focusbar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+  padding-block: 12px;
+}
+.wm { font-family: var(--font-display); font-size: 28px; line-height: 1; letter-spacing: .04em; }
+.wm small { margin-left: 8px; font: 600 13px/1 var(--font-body); letter-spacing: 0; color: var(--muted); }
+.focusbar { display: none; gap: 10px; }
+.fb-id { display: grid; gap: 2px; }
+.fb-round { font-size: 12px; font-weight: 600; letter-spacing: .06em; color: var(--muted); }
+.fb-team { font-family: var(--font-display); font-size: 32px; line-height: 1; }
+
+.menu-wrap { position: relative; }
+.menu {
+  position: absolute;
+  right: 0;
+  top: calc(100% + 6px);
+  z-index: 30;
+  display: grid;
+  min-width: 250px;
+  padding: 6px;
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  box-shadow: var(--shadow);
+}
+.menu-item {
+  appearance: none;
+  padding: 10px 12px;
+  border: 0;
+  border-radius: 8px;
+  background: transparent;
+  color: var(--ink);
+  font: 500 14px/1.3 var(--font-body);
+  text-align: left;
+  cursor: pointer;
+}
+.menu-item:hover { background: var(--surface-2); }
+.menu hr { margin: 4px 6px; border: 0; border-top: 1px solid var(--line); }
+
+.stage {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 320px;
+  gap: clamp(12px, 2vw, 24px);
+  min-height: 0;
+}
+.board-area { display: grid; grid-template-rows: minmax(0, 1fr) auto; gap: 10px; min-height: 0; min-width: 0; }
+.board-wrap { container-type: size; min-height: 0; display: grid; place-items: center; }
+.board {
+  position: relative;
+  width: min(100cqw, calc(100cqh * 10 / 7));
+  max-width: 100%;
+  aspect-ratio: 10 / 7;
+  container-type: inline-size;
+  overflow: hidden;
+  background: var(--board);
+  border: 1px solid var(--line);
+  border-radius: 16px;
+  box-shadow: var(--shadow);
+  touch-action: manipulation;
+  user-select: none;
+  -webkit-user-select: none;
+}
+.board.picking { cursor: crosshair; }
+.grid { position: absolute; inset: 0; width: 100%; height: 100%; }
+.grid line { stroke: var(--grid); stroke-width: 1; vector-effect: non-scaling-stroke; transition: stroke .2s; }
+.grid circle { fill: var(--dot); }
+.board.picking .grid line { stroke: var(--grid-strong); }
+
+/* one grid cell = 10cqw (the board is 10 cells wide including the half-cell margins) */
+.stick, .ghost {
+  --r: 0deg;
+  --s: 1;
+  position: absolute;
+  left: var(--x);
+  top: var(--y);
+  width: 8.6cqw;
+  height: 2.4cqw;
+  border-radius: .45cqw;
+  transform: translate(-50%, -50%) rotate(var(--r)) scale(var(--s));
+}
+.stick {
+  z-index: 2;
+  display: grid;
+  place-items: center;
+  padding: 0;
+  border: 0;
+  background:
+    linear-gradient(180deg, rgba(255, 255, 255, .34), rgba(255, 255, 255, 0) 46%, rgba(0, 0, 0, .16)),
+    repeating-linear-gradient(180deg, transparent 0 22%, rgba(0, 0, 0, .05) 22% 27%),
+    var(--c);
+  box-shadow: 0 .3cqw .6cqw var(--stick-shadow);
+  cursor: grab;
+  touch-action: none;
+  transition:
+    left .42s cubic-bezier(.2, .8, .2, 1),
+    top .42s cubic-bezier(.2, .8, .2, 1),
+    transform .42s cubic-bezier(.2, .8, .2, 1),
+    box-shadow .2s;
+}
+.stick .lbl { display: none; font: 700 1.25cqw/1 var(--font-body); color: var(--lc); letter-spacing: .02em; pointer-events: none; }
+.board.labels .stick .lbl { display: block; }
+.stick.sel {
+  --s: 1.08;
+  z-index: 4;
+  box-shadow: 0 0 0 .3cqw var(--board), 0 0 0 .75cqw var(--ink), 0 1cqw 2cqw var(--stick-shadow);
+}
+.stick.dragging { z-index: 5; cursor: grabbing; transition: transform .12s, box-shadow .2s; }
+.ghost {
+  z-index: 1;
+  background: var(--c);
+  opacity: .38;
+  outline: .25cqw dashed var(--c);
+  outline-offset: .3cqw;
+  pointer-events: none;
+}
+.announce {
+  position: absolute;
+  left: 50%;
+  top: 5%;
+  z-index: 6;
+  max-width: 90%;
+  padding: .9cqw 2.4cqw;
+  border-radius: 999px;
+  background: var(--ink);
+  color: var(--on-ink);
+  font-family: var(--font-display);
+  font-size: 3.6cqw;
+  line-height: 1.1;
+  text-align: center;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  pointer-events: none;
+  opacity: 0;
+  transform: translateX(-50%);
+}
+.announce small { display: block; margin-top: .3cqw; font: 500 1.4cqw/1.2 var(--font-body); opacity: .8; }
+.announce.show { animation: announce 2.2s ease both; }
+@keyframes announce {
+  0% { opacity: 0; transform: translate(-50%, 10px) scale(.96); }
+  10% { opacity: 1; transform: translate(-50%, 0) scale(1); }
+  80% { opacity: 1; transform: translate(-50%, 0) scale(1); }
+  100% { opacity: 0; transform: translate(-50%, 0) scale(1); }
+}
+
+.board-foot { display: grid; gap: 6px; justify-items: center; }
+.legend { display: flex; flex-wrap: wrap; justify-content: center; gap: 8px; }
+.chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 6px 12px 6px 8px;
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  background: var(--surface);
+  color: var(--ink);
+  font: 700 14px/1.2 var(--font-body);
+  cursor: pointer;
+}
+.chip i { width: 26px; height: 8px; border-radius: 2px; background: var(--c); }
+.chip[aria-pressed="true"] { border-color: var(--ink); box-shadow: inset 0 0 0 1px var(--ink); }
+.hint { margin: 0; font-size: 13px; color: var(--muted); text-align: center; }
+
+.panel { display: flex; flex-direction: column; gap: 16px; min-height: 0; overflow: auto; padding-bottom: 4px; }
+.turn {
+  display: grid;
+  gap: 12px;
+  padding: 18px;
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: 16px;
+  box-shadow: var(--shadow);
+}
+.turn-name {
+  margin: 0;
+  font-family: var(--font-display);
+  font-weight: 400;
+  font-size: 46px;
+  line-height: 1;
+  overflow-wrap: anywhere;
+  text-wrap: balance;
+}
+.hand-cap { margin: 0; font-size: 14px; color: var(--muted); }
+.hand-cap b { color: var(--ink); white-space: nowrap; }
+.turn-actions { display: grid; gap: 8px; }
+.section-label { margin: 0 0 8px; font-size: 12px; font-weight: 700; letter-spacing: .08em; color: var(--muted); }
+.team-list { display: grid; gap: 6px; margin: 0; padding: 0; list-style: none; }
+.team {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto auto;
+  align-items: center;
+  gap: 10px;
+  padding: 8px 8px 8px 14px;
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: 12px;
+}
+.team.now {
+  --seg-on: var(--on-ink);
+  --seg-off: rgba(128, 128, 128, .3);
+  background: var(--ink);
+  border-color: var(--ink);
+  color: var(--on-ink);
+}
+.t-name { display: flex; flex-wrap: wrap; align-items: center; gap: 4px 8px; font-weight: 700; font-size: 17px; overflow-wrap: anywhere; min-width: 0; }
+.pill {
+  padding: 2px 7px;
+  border: 1px solid currentColor;
+  border-radius: 999px;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: .04em;
+  opacity: .8;
+}
+.t-adj { display: grid; gap: 4px; }
+.mini {
+  width: 28px;
+  height: 22px;
+  padding: 0;
+  border: 1px solid currentColor;
+  border-radius: 6px;
+  background: transparent;
+  color: inherit;
+  font: 700 14px/1 var(--font-body);
+  opacity: .45;
+  cursor: pointer;
+}
+.mini:hover:not(:disabled) { opacity: 1; }
+.mini:disabled { opacity: .15; cursor: not-allowed; }
+.team.bump .t-score { animation: bump .6s ease; }
+@keyframes bump { 0% { transform: scale(1); } 30% { transform: scale(1.2); } 100% { transform: scale(1); } }
+.keys { margin: 0; font-size: 12px; line-height: 1.7; color: var(--muted); }
+
+/* focus (fullscreen) mode: board only, one control strip */
+.game.focus .topbar, .game.focus .panel, .game.focus .hint { display: none; }
+.game.focus .focusbar { display: flex; }
+.game.focus .stage { grid-template-columns: minmax(0, 1fr); }
+
+/* ---------- dialog & toast ---------- */
+dialog {
+  width: min(500px, calc(100vw - 32px));
+  max-height: calc(100vh - 32px);
+  padding: 0;
+  background: var(--surface);
+  color: var(--ink);
+  border: 1px solid var(--line);
+  border-radius: 18px;
+  box-shadow: var(--shadow);
+}
+dialog::backdrop { background: var(--scrim); }
+.dlg { display: grid; gap: 16px; padding: 24px; }
+.dlg h2 { margin: 0; font-family: var(--font-display); font-weight: 400; font-size: 34px; line-height: 1.1; text-wrap: balance; }
+.dlg p { margin: 0; }
+.dlg .eyebrow { margin-bottom: -10px; }
+.refill { display: grid; gap: 10px; padding: 16px; border-radius: 14px; background: var(--surface-2); }
+.refill strong { font-size: 22px; }
+.dlg-actions { display: flex; flex-wrap: wrap; justify-content: flex-end; gap: 8px; }
+.results { display: grid; gap: 8px; margin: 0; padding: 0; list-style: none; }
+.results li {
+  display: grid;
+  grid-template-columns: 3.4em minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 12px;
+  padding: 10px 14px;
+  border-radius: 12px;
+  background: var(--surface-2);
+}
+.results li.first {
+  --seg-on: var(--on-ink);
+  --seg-off: rgba(128, 128, 128, .3);
+  background: var(--ink);
+  color: var(--on-ink);
+}
+.rank { font-family: var(--font-display); font-size: 22px; }
+.results .t-score { height: 36px; }
+
+.toast {
+  position: fixed;
+  left: 50%;
+  bottom: calc(20px + env(safe-area-inset-bottom, 0px));
+  z-index: 50;
+  max-width: calc(100vw - 32px);
+  padding: 10px 16px;
+  border-radius: 10px;
+  background: var(--ink);
+  color: var(--on-ink);
+  font-size: 14px;
+  font-weight: 600;
+  opacity: 0;
+  pointer-events: none;
+  transform: translate(-50%, 8px);
+  transition: opacity .2s, transform .2s;
+}
+.toast.show { opacity: 1; transform: translate(-50%, 0); }
+
+/* ---------- narrow screens ---------- */
+@media (max-width: 900px) {
+  .setup-inner { grid-template-columns: minmax(0, 1fr); }
+  .game { height: auto; min-height: 100%; }
+  .stage { grid-template-columns: minmax(0, 1fr); }
+  .board-wrap { container-type: normal; }
+  .board { width: 100%; }
+  .panel { overflow: visible; }
+}
+@media (max-width: 520px) {
+  .count-btn { min-height: 52px; font-size: 22px; }
+  .turn-name { font-size: 38px; }
+  .btn kbd, .chip kbd { display: none; }
+  .rules div { grid-template-columns: minmax(0, 1fr); gap: 0; }
+}
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after { transition: none !important; animation: none !important; }
+  .announce.show { opacity: 1; }
+}
+</style>
+</head>
+<body>
+<div id="app">
+
+  <!-- 게임 설정 화면 -->
+  <section class="setup" id="setup">
+    <div class="setup-inner">
+      <div class="brand-block">
+        <h1 class="wordmark">DIGIT</h1>
+        <p class="brand-sub">막대 하나를 옮겨 카드 속 모양을 만드는 게임. 판은 교실 화면에 크게 띄우고, 팀 점수는 여기서 바로 올립니다.</p>
+        <div class="preview" id="previewBox" aria-hidden="true"></div>
+        <p class="preview-cap">시작 모양 · 게임 중 메뉴에서 바꿀 수 있어요</p>
+      </div>
+
+      <form class="setup-form" id="setupForm" autocomplete="off">
+        <div class="resume" id="resumeRow" hidden>
+          <div class="resume-text"><b>진행 중인 게임이 있어요</b><span id="resumeInfo"></span></div>
+          <button type="button" class="btn btn-primary" data-action="resume">이어서 하기</button>
+        </div>
+
+        <fieldset>
+          <legend class="field-label">팀 수</legend>
+          <div class="count-group" id="countGroup">
+            <button type="button" class="count-btn" data-action="count" data-n="2" aria-pressed="false">2<small>팀</small></button>
+            <button type="button" class="count-btn" data-action="count" data-n="3" aria-pressed="false">3<small>팀</small></button>
+            <button type="button" class="count-btn" data-action="count" data-n="4" aria-pressed="true">4<small>팀</small></button>
+            <button type="button" class="count-btn" data-action="count" data-n="5" aria-pressed="false">5<small>팀</small></button>
+            <button type="button" class="count-btn" data-action="count" data-n="6" aria-pressed="false">6<small>팀</small></button>
+          </div>
+        </fieldset>
+
+        <fieldset>
+          <legend class="field-label">팀 이름 <span>비워 두면 "1팀", "2팀"으로 부릅니다</span></legend>
+          <div class="names">
+            <label class="name-field" id="nameField0">첫 번째 팀<input id="team-name-0" type="text" maxlength="12" placeholder="1팀"></label>
+            <label class="name-field" id="nameField1">두 번째 팀<input id="team-name-1" type="text" maxlength="12" placeholder="2팀"></label>
+            <label class="name-field" id="nameField2">세 번째 팀<input id="team-name-2" type="text" maxlength="12" placeholder="3팀"></label>
+            <label class="name-field" id="nameField3">네 번째 팀<input id="team-name-3" type="text" maxlength="12" placeholder="4팀"></label>
+            <label class="name-field" id="nameField4" hidden>다섯 번째 팀<input id="team-name-4" type="text" maxlength="12" placeholder="5팀"></label>
+            <label class="name-field" id="nameField5" hidden>여섯 번째 팀<input id="team-name-5" type="text" maxlength="12" placeholder="6팀"></label>
+          </div>
+        </fieldset>
+
+        <dl class="rules">
+          <div><dt>진행 순서</dt><dd>1팀부터 차례대로 돌아갑니다.</dd></div>
+          <div><dt>한 번에</dt><dd>막대 1개를 옮겨 카드의 모양을 만듭니다.</dd></div>
+          <div><dt>손패</dt><dd>팀마다 카드를 최대 5장 쥡니다.</dd></div>
+          <div><dt>연속 성공</dt><dd>성공하면 같은 팀이 이어서 하고, 최대 5번까지입니다.</dd></div>
+          <div><dt>카드 보충</dt><dd>차례가 끝나면 성공한 장수만큼 카드를 나눠 줍니다.</dd></div>
+        </dl>
+
+        <button type="submit" class="btn btn-primary btn-xl">게임 시작</button>
+        <p class="fine" id="overwriteNote" hidden>새 게임을 시작하면 진행 중인 게임 기록은 지워집니다.</p>
+      </form>
+    </div>
+  </section>
+
+  <!-- 게임 화면 -->
+  <section class="game" id="game" hidden>
+    <header class="topbar">
+      <div class="wm">DIGIT<small>교실판</small></div>
+      <div class="spacer"></div>
+      <button type="button" class="btn" data-action="labels" id="btnLabels" aria-pressed="false">막대에 색 이름</button>
+      <button type="button" class="btn" data-action="undo">되돌리기 <kbd>Z</kbd></button>
+      <button type="button" class="btn" data-action="focus" id="btnFull">전체화면 <kbd>F</kbd></button>
+      <div class="menu-wrap">
+        <button type="button" class="btn" data-action="menu" id="btnMenu" aria-haspopup="true" aria-expanded="false">메뉴</button>
+        <div class="menu" id="menu" hidden>
+          <button type="button" class="menu-item" data-action="save-start">지금 모양을 시작 모양으로 저장</button>
+          <button type="button" class="menu-item" data-action="reset-start">막대를 시작 모양으로 되돌리기</button>
+          <hr>
+          <button type="button" class="menu-item" data-action="results">점수 순위 보기</button>
+          <button type="button" class="menu-item" data-action="new-game">새 게임 설정</button>
+        </div>
+      </div>
+    </header>
+
+    <div class="focusbar">
+      <div class="fb-id"><span class="fb-round" id="fbRound"></span><span class="fb-team" id="fbTeam"></span></div>
+      <div class="hand small" id="fbHand" aria-hidden="true"></div>
+      <div class="spacer"></div>
+      <button type="button" class="btn btn-primary" data-action="success">성공 +1 <kbd>S</kbd></button>
+      <button type="button" class="btn" data-action="pass">차례 넘기기 <kbd>N</kbd></button>
+      <button type="button" class="btn" data-action="undo">되돌리기</button>
+      <button type="button" class="btn" data-action="focus">전체화면 끝내기</button>
+    </div>
+
+    <main class="stage">
+      <div class="board-area">
+        <div class="board-wrap">
+          <div class="board" id="board" role="group" aria-label="게임판">
+            <div class="ghost" id="ghost" hidden></div>
+            <div class="announce" id="announce" role="status"></div>
+          </div>
+        </div>
+        <div class="board-foot">
+          <div class="legend" id="legend"></div>
+          <p class="hint">막대를 누른 뒤 옮길 자리를 누르세요. 끌어서 옮겨도 됩니다.</p>
+        </div>
+      </div>
+
+      <aside class="panel">
+        <section class="turn" aria-label="지금 차례">
+          <p class="eyebrow"><span id="turnRound"></span> · 지금 차례</p>
+          <h2 class="turn-name" id="turnName"></h2>
+          <div class="hand" id="hand" aria-hidden="true"></div>
+          <p class="hand-cap" id="handCap"></p>
+          <div class="turn-actions">
+            <button type="button" class="btn btn-primary btn-xl" data-action="success">성공 +1 <kbd>S</kbd></button>
+            <button type="button" class="btn" data-action="pass">차례 넘기기 <kbd>N</kbd></button>
+          </div>
+        </section>
+        <section>
+          <h3 class="section-label">점수</h3>
+          <ol class="team-list" id="teamList"></ol>
+        </section>
+        <p class="keys">키보드: 1–5 막대 고르기 · 방향키 한 칸 이동 · R 세우기/눕히기 · Z 되돌리기 · F 전체화면 · Esc 선택 취소</p>
+      </aside>
+    </main>
+  </section>
+
+  <dialog id="dlg"><div class="dlg" id="dlgBody"></div></dialog>
+  <div class="toast" id="toast" role="status"></div>
+</div>
+
+<script>
+(() => {
+  'use strict';
+
+  // ---------- 설정값 ----------
+  const COLS = 9;            // 가로 칸 수 (점은 COLS + 1개). CSS의 aspect-ratio 10/7, 10cqw 칸 크기와 맞물려 있음
+  const ROWS = 6;            // 세로 칸 수
+  const MAX_STREAK = 5;      // 한 차례 연속 성공 최대 = 손패 최대 장수
+  const MIN_TEAMS = 2;
+  const MAX_TEAMS = 6;
+  const HISTORY_LIMIT = 100;
+  const STICKS = [
+    { name: '빨강', color: 'var(--red)', label: '#ffffff' },
+    { name: '노랑', color: 'var(--yellow)', label: '#3b2d00' },
+    { name: '초록', color: 'var(--green)', label: '#ffffff' },
+    { name: '파랑', color: 'var(--blue)', label: '#ffffff' },
+    { name: '보라', color: 'var(--purple)', label: '#ffffff' },
+  ];
+  // 기본 시작 모양: 디지털 숫자 '2' (o: h=가로, v=세로, x/y: 막대의 왼쪽·위쪽 끝 점)
+  const DEFAULT_START = [
+    { o: 'h', x: 4, y: 2 },
+    { o: 'v', x: 5, y: 2 },
+    { o: 'h', x: 4, y: 3 },
+    { o: 'v', x: 4, y: 3 },
+    { o: 'h', x: 4, y: 4 },
+  ];
+  const KEY_GAME = 'digit-classroom:game';
+  const KEY_START = 'digit-classroom:start';
+  const KEY_PREFS = 'digit-classroom:prefs';
+
+  // ---------- 저장소 (실패해도 앱은 동작) ----------
+  const store = {
+    get(k) { try { const v = localStorage.getItem(k); return v ? JSON.parse(v) : null; } catch (_) { return null; } },
+    set(k, v) { try { localStorage.setItem(k, JSON.stringify(v)); } catch (_) { /* 저장 불가 */ } },
+    del(k) { try { localStorage.removeItem(k); } catch (_) { /* 저장 불가 */ } },
+  };
+
+  const $ = id => document.getElementById(id);
+  const clone = v => JSON.parse(JSON.stringify(v));
+  const esc = s => String(s).replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+
+  // ---------- 판 좌표 ----------
+  function edgeValid(e) {
+    if (!e || (e.o !== 'h' && e.o !== 'v') || !Number.isInteger(e.x) || !Number.isInteger(e.y)) return false;
+    return e.o === 'h'
+      ? e.x >= 0 && e.x < COLS && e.y >= 0 && e.y <= ROWS
+      : e.x >= 0 && e.x <= COLS && e.y >= 0 && e.y < ROWS;
+  }
+  const sameEdge = (a, b) => a.o === b.o && a.x === b.x && a.y === b.y;
+  const edgeCenter = e => (e.o === 'h' ? [e.x + 0.5, e.y] : [e.x, e.y + 0.5]);
+  const toPct = (gx, gy) => [(gx + 0.5) / (COLS + 1) * 100, (gy + 0.5) / (ROWS + 1) * 100];
+  const ALL_EDGES = [];
+  for (let y = 0; y <= ROWS; y++) for (let x = 0; x < COLS; x++) ALL_EDGES.push({ o: 'h', x, y });
+  for (let y = 0; y < ROWS; y++) for (let x = 0; x <= COLS; x++) ALL_EDGES.push({ o: 'v', x, y });
+
+  function layoutValid(list) {
+    return Array.isArray(list) && list.length === STICKS.length && list.every(edgeValid)
+      && list.every((e, i) => list.findIndex(f => sameEdge(e, f)) === i);
+  }
+  function gameValid(g) {
+    return !!g && Array.isArray(g.teams) && g.teams.length >= MIN_TEAMS && g.teams.length <= MAX_TEAMS
+      && g.teams.every(t => t && typeof t.name === 'string' && Number.isInteger(t.score) && t.score >= 0)
+      && Number.isInteger(g.current) && g.current >= 0 && g.current < g.teams.length
+      && Number.isInteger(g.streak) && g.streak >= 0 && g.streak <= MAX_STREAK
+      && Number.isInteger(g.round) && g.round >= 1
+      && layoutValid(g.sticks) && layoutValid(g.start);
+  }
+  function startLayout() {
+    const s = store.get(KEY_START);
+    return layoutValid(s) ? s : clone(DEFAULT_START);
+  }
+
+  // ---------- 상태 ----------
+  let state = null;     // { teams:[{name,score}], current, streak, round, sticks, start }
+  let history = [];     // [{ label, snap }]
+  const ui = { selected: null, hot: null, drag: null, focus: false, autoTimer: 0 };
+  const prefs = Object.assign({ labels: false, teamCount: 4, names: [] }, store.get(KEY_PREFS) || {});
+  if (!(prefs.teamCount >= MIN_TEAMS && prefs.teamCount <= MAX_TEAMS)) prefs.teamCount = 4;
+  if (!Array.isArray(prefs.names)) prefs.names = [];
+
+  const setupEl = $('setup');
+  const gameEl = $('game');
+  const boardEl = $('board');
+  const ghostEl = $('ghost');
+  const annEl = $('announce');
+  const menuEl = $('menu');
+  const dlg = $('dlg');
+  const dlgBody = $('dlgBody');
+  const stickEls = [];
+
+  function save() { if (state) store.set(KEY_GAME, { v: 1, state, history }); }
+  function savePrefs() { store.set(KEY_PREFS, prefs); }
+  function loadSaved() {
+    const d = store.get(KEY_GAME);
+    if (!d || !gameValid(d.state)) return null;
+    const h = Array.isArray(d.history)
+      ? d.history.filter(x => x && typeof x.label === 'string' && x.snap && gameValid(Object.assign({}, x.snap, { start: d.state.start })))
+      : [];
+    return { state: d.state, history: h.slice(-HISTORY_LIMIT) };
+  }
+  function pushHistory(label) {
+    history.push({
+      label,
+      snap: clone({ teams: state.teams, current: state.current, streak: state.streak, round: state.round, sticks: state.sticks }),
+    });
+    if (history.length > HISTORY_LIMIT) history.shift();
+  }
+  function commit() { save(); renderBoard(); renderPanel(); }
+
+  // ---------- 7세그먼트 숫자 (점수 표시) ----------
+  const SEG = {
+    a: [2.7, 0.5, 6.6, 2], g: [2.7, 9, 6.6, 2], d: [2.7, 17.5, 6.6, 2],
+    f: [0.5, 2.7, 2, 6.1], b: [9.5, 2.7, 2, 6.1], e: [0.5, 11.2, 2, 6.1], c: [9.5, 11.2, 2, 6.1],
+  };
+  const DIGIT_SEGS = ['abcdef', 'bc', 'abdeg', 'abcdg', 'bcfg', 'acdfg', 'acdefg', 'abc', 'abcdefg', 'abcdfg'];
+  function segDigit(n) {
+    const on = DIGIT_SEGS[n];
+    const rects = Object.keys(SEG).map(k => {
+      const [x, y, w, h] = SEG[k];
+      return `<rect x="${x}" y="${y}" width="${w}" height="${h}" rx="0.6"${on.includes(k) ? ' class="on"' : ''}/>`;
+    }).join('');
+    return `<svg class="seg" viewBox="0 0 12 20" aria-hidden="true">${rects}</svg>`;
+  }
+  const segNumber = n => String(n).split('').map(c => segDigit(+c)).join('');
+  const handHTML = won => Array.from({ length: MAX_STREAK }, (_, i) => `<span class="card${i < won ? ' won' : ''}"></span>`).join('');
+
+  // ---------- 판 만들기 ----------
+  function gridSVG(cls) {
+    const W = COLS + 1, H = ROWS + 1;
+    let s = `<svg class="${cls}" viewBox="0 0 ${W} ${H}" preserveAspectRatio="none" aria-hidden="true">`;
+    for (let y = 0; y <= ROWS; y++) s += `<line x1="0.5" y1="${y + 0.5}" x2="${COLS + 0.5}" y2="${y + 0.5}"/>`;
+    for (let x = 0; x <= COLS; x++) s += `<line x1="${x + 0.5}" y1="0.5" x2="${x + 0.5}" y2="${ROWS + 0.5}"/>`;
+    for (let y = 0; y <= ROWS; y++) for (let x = 0; x <= COLS; x++) s += `<circle cx="${x + 0.5}" cy="${y + 0.5}" r="0.055"/>`;
+    return s + '</svg>';
+  }
+  function previewSVG(layout) {
+    const W = COLS + 1, H = ROWS + 1;
+    let s = `<svg viewBox="0 0 ${W} ${H}" aria-hidden="true">`;
+    for (let y = 0; y <= ROWS; y++) for (let x = 0; x <= COLS; x++) s += `<circle cx="${x + 0.5}" cy="${y + 0.5}" r="0.05" style="fill:var(--dot)"/>`;
+    layout.forEach((e, i) => {
+      const [cx, cy] = edgeCenter(e);
+      const w = e.o === 'h' ? 0.86 : 0.24, h = e.o === 'h' ? 0.24 : 0.86;
+      s += `<rect x="${cx + 0.5 - w / 2}" y="${cy + 0.5 - h / 2}" width="${w}" height="${h}" rx="0.05" style="fill:${STICKS[i].color}"/>`;
+    });
+    return s + '</svg>';
+  }
+  function buildBoard() {
+    boardEl.insertAdjacentHTML('afterbegin', gridSVG('grid'));
+    STICKS.forEach((st, i) => {
+      const b = document.createElement('button');
+      b.type = 'button';
+      b.className = 'stick';
+      b.dataset.id = String(i);
+      b.style.setProperty('--c', st.color);
+      b.style.setProperty('--lc', st.label);
+      b.setAttribute('aria-label', `${st.name} 막대`);
+      b.innerHTML = `<span class="lbl">${st.name}</span>`;
+      attachStickEvents(b, i);
+      boardEl.appendChild(b);
+      stickEls.push(b);
+    });
+    $('legend').innerHTML = STICKS.map((st, i) =>
+      `<button type="button" class="chip" data-action="pick" data-id="${i}" style="--c:${st.color}" aria-pressed="false"><i></i>${st.name}<kbd>${i + 1}</kbd></button>`
+    ).join('');
+  }
+
+  // ---------- 렌더링 ----------
+  function renderBoard() {
+    if (!state) return;
+    state.sticks.forEach((s, i) => {
+      const el = stickEls[i];
+      el.classList.toggle('sel', ui.selected === i);
+      el.setAttribute('aria-pressed', ui.selected === i ? 'true' : 'false');
+      if (ui.drag && ui.drag.id === i && ui.drag.moved) return;
+      const [px, py] = toPct(...edgeCenter(s));
+      el.style.setProperty('--x', px + '%');
+      el.style.setProperty('--y', py + '%');
+      el.style.setProperty('--r', s.o === 'v' ? '90deg' : '0deg');
+    });
+    boardEl.classList.toggle('picking', ui.selected !== null);
+    boardEl.classList.toggle('labels', !!prefs.labels);
+    document.querySelectorAll('.chip').forEach(c => c.setAttribute('aria-pressed', +c.dataset.id === ui.selected ? 'true' : 'false'));
+    renderGhost();
+  }
+  function renderGhost() {
+    const e = ui.hot;
+    if (!e || ui.selected === null) { ghostEl.hidden = true; return; }
+    const [px, py] = toPct(...edgeCenter(e));
+    ghostEl.style.setProperty('--x', px + '%');
+    ghostEl.style.setProperty('--y', py + '%');
+    ghostEl.style.setProperty('--r', e.o === 'v' ? '90deg' : '0deg');
+    ghostEl.style.setProperty('--c', STICKS[ui.selected].color);
+    ghostEl.hidden = false;
+  }
+  function setHot(e) {
+    if (e && ui.selected !== null && sameEdge(e, state.sticks[ui.selected])) e = null;
+    ui.hot = e;
+    renderGhost();
+  }
+  function renderPanel() {
+    if (!state) return;
+    const t = state.teams[state.current];
+    const n = state.streak;
+    $('turnRound').textContent = `${state.round}라운드`;
+    $('turnName').textContent = t.name;
+    $('hand').innerHTML = handHTML(n);
+    $('handCap').innerHTML = n === 0
+      ? `성공하면 같은 팀이 이어서 합니다. 최대 ${MAX_STREAK}번.`
+      : `이번 차례 성공 <b>${n}</b> / ${MAX_STREAK} · 차례가 끝나면 카드 <b>${n}장</b> 보충`;
+    $('fbRound').textContent = `${state.round}라운드 · 지금 차례`;
+    $('fbTeam').textContent = t.name;
+    $('fbHand').innerHTML = handHTML(n);
+    document.querySelectorAll('[data-action="success"]').forEach(b => { b.disabled = n >= MAX_STREAK; });
+
+    const top = Math.max(...state.teams.map(x => x.score));
+    $('teamList').innerHTML = state.teams.map((tm, i) => {
+      const now = i === state.current;
+      const name = esc(tm.name);
+      return `<li class="team${now ? ' now' : ''}" data-i="${i}">
+        <span class="t-name">${name}${now ? '<span class="pill">차례</span>' : ''}${top > 0 && tm.score === top ? '<span class="pill">선두</span>' : ''}</span>
+        <span class="t-score" role="img" aria-label="${tm.score}점">${segNumber(tm.score)}</span>
+        <span class="t-adj">
+          <button type="button" class="mini" data-action="adj" data-i="${i}" data-d="1" aria-label="${name} 점수 1점 더하기">+</button>
+          <button type="button" class="mini" data-action="adj" data-i="${i}" data-d="-1" aria-label="${name} 점수 1점 빼기"${tm.score === 0 ? ' disabled' : ''}>−</button>
+        </span>
+      </li>`;
+    }).join('');
+
+    const last = history[history.length - 1];
+    document.querySelectorAll('[data-action="undo"]').forEach(b => {
+      b.disabled = !last;
+      b.title = last ? `되돌리기: ${last.label}` : '되돌릴 내용이 없습니다';
+    });
+    $('btnLabels').setAttribute('aria-pressed', prefs.labels ? 'true' : 'false');
+  }
+
+  let annTimer = 0;
+  function announce(title, sub) {
+    annEl.innerHTML = esc(title) + (sub ? `<small>${esc(sub)}</small>` : '');
+    annEl.classList.remove('show');
+    void annEl.offsetWidth;
+    annEl.classList.add('show');
+    clearTimeout(annTimer);
+    annTimer = setTimeout(() => annEl.classList.remove('show'), 2300);
+  }
+  let toastTimer = 0;
+  function toast(msg) {
+    const el = $('toast');
+    el.textContent = msg;
+    el.classList.add('show');
+    clearTimeout(toastTimer);
+    toastTimer = setTimeout(() => el.classList.remove('show'), 1900);
+  }
+
+  // ---------- 막대 옮기기 ----------
+  function select(id) {
+    ui.selected = id === null || id === undefined ? null : id;
+    ui.hot = null;
+    renderBoard();
+  }
+  const isFree = (e, exceptId) => !state.sticks.some((s, i) => i !== exceptId && sameEdge(s, e));
+  function nearestFreeEdge(gx, gy, id) {
+    let best = null, bestD = Infinity;
+    for (const e of ALL_EDGES) {
+      if (!isFree(e, id)) continue;
+      const [cx, cy] = edgeCenter(e);
+      const d = Math.hypot(cx - gx, cy - gy);
+      if (d < bestD) { bestD = d; best = e; }
+    }
+    return bestD <= 0.7 ? best : null;
+  }
+  function gridPoint(ev) {
+    const r = boardEl.getBoundingClientRect();
+    return [
+      (ev.clientX - r.left) / r.width * (COLS + 1) - 0.5,
+      (ev.clientY - r.top) / r.height * (ROWS + 1) - 0.5,
+    ];
+  }
+  function moveStick(id, e, keepSelected) {
+    const s = state.sticks[id];
+    if (!edgeValid(e) || sameEdge(s, e) || !isFree(e, id)) return false;
+    pushHistory(`${STICKS[id].name} 막대 옮김`);
+    state.sticks[id] = { o: e.o, x: e.x, y: e.y };
+    if (!keepSelected) ui.selected = null;
+    ui.hot = null;
+    commit();
+    return true;
+  }
+  function nudge(dx, dy) {
+    const id = ui.selected;
+    if (id === null) return;
+    const s = state.sticks[id];
+    moveStick(id, { o: s.o, x: s.x + dx, y: s.y + dy }, true);
+  }
+  function rotateSelected() {
+    const id = ui.selected;
+    if (id === null) return;
+    const s = state.sticks[id];
+    const options = s.o === 'h'
+      ? [{ o: 'v', x: s.x, y: s.y }, { o: 'v', x: s.x + 1, y: s.y }, { o: 'v', x: s.x, y: s.y - 1 }, { o: 'v', x: s.x + 1, y: s.y - 1 }]
+      : [{ o: 'h', x: s.x, y: s.y }, { o: 'h', x: s.x - 1, y: s.y }, { o: 'h', x: s.x, y: s.y + 1 }, { o: 'h', x: s.x - 1, y: s.y + 1 }];
+    const e = options.find(c => edgeValid(c) && isFree(c, id));
+    if (e) moveStick(id, e, true);
+  }
+
+  function attachStickEvents(el, id) {
+    el.addEventListener('pointerdown', ev => {
+      if (ev.button !== 0 || !state) return;
+      ev.preventDefault();
+      ev.stopPropagation();
+      const wasSelected = ui.selected === id;
+      select(id);
+      ui.drag = { id, x0: ev.clientX, y0: ev.clientY, moved: false, wasSelected, pid: ev.pointerId };
+      try { el.setPointerCapture(ev.pointerId); } catch (_) { /* 무시 */ }
+    });
+    el.addEventListener('pointermove', ev => {
+      const d = ui.drag;
+      if (!d || d.pid !== ev.pointerId) return;
+      if (!d.moved && Math.hypot(ev.clientX - d.x0, ev.clientY - d.y0) < 6) return;
+      if (!d.moved) { d.moved = true; el.classList.add('dragging'); }
+      let [gx, gy] = gridPoint(ev);
+      gx = Math.max(-0.2, Math.min(COLS + 0.2, gx));
+      gy = Math.max(-0.2, Math.min(ROWS + 0.2, gy));
+      const [px, py] = toPct(gx, gy);
+      el.style.setProperty('--x', px + '%');
+      el.style.setProperty('--y', py + '%');
+      const hot = nearestFreeEdge(gx, gy, id);
+      setHot(hot);
+      if (hot) el.style.setProperty('--r', hot.o === 'v' ? '90deg' : '0deg');
+    });
+    const finish = (ev, cancelled) => {
+      const d = ui.drag;
+      if (!d || d.pid !== ev.pointerId) return;
+      ui.drag = null;
+      el.classList.remove('dragging');
+      if (d.moved) {
+        const target = ui.hot;
+        ui.hot = null;
+        if (cancelled || !target || !moveStick(id, target, false)) renderBoard();
+      } else if (d.wasSelected) {
+        select(null);
+      }
+    };
+    el.addEventListener('pointerup', ev => finish(ev, false));
+    el.addEventListener('pointercancel', ev => finish(ev, true));
+    el.addEventListener('click', ev => {
+      ev.stopPropagation();
+      if (ev.detail === 0) select(ui.selected === id ? null : id); // 키보드 Enter/Space
+    });
+  }
+
+  boardEl.addEventListener('pointermove', ev => {
+    if (ui.drag || ui.selected === null || ev.pointerType !== 'mouse') return;
+    const [gx, gy] = gridPoint(ev);
+    setHot(nearestFreeEdge(gx, gy, ui.selected));
+  });
+  boardEl.addEventListener('pointerleave', () => { if (!ui.drag) setHot(null); });
+  boardEl.addEventListener('click', ev => {
+    if (!state || ui.selected === null || ev.target.closest('.stick')) return;
+    const [gx, gy] = gridPoint(ev);
+    const e = nearestFreeEdge(gx, gy, ui.selected);
+    if (!e || !moveStick(ui.selected, e, false)) select(null);
+  });
+
+  // ---------- 점수와 차례 ----------
+  function success() {
+    if (!state || state.streak >= MAX_STREAK || dlg.open) return;
+    const t = state.teams[state.current];
+    pushHistory(`${t.name} 성공`);
+    t.score += 1;
+    state.streak += 1;
+    select(null);
+    commit();
+    const row = document.querySelector(`.team[data-i="${state.current}"]`);
+    if (row) row.classList.add('bump');
+    announce(`${t.name} 성공!`, `이번 차례 ${state.streak}번째 · ${t.score}점`);
+    clearTimeout(ui.autoTimer);
+    if (state.streak >= MAX_STREAK) {
+      ui.autoTimer = setTimeout(() => { if (state && state.streak >= MAX_STREAK) openTurnEnd(true); }, 900);
+    }
+  }
+  function nextTurn() {
+    const prev = state.teams[state.current];
+    pushHistory(`${prev.name} 차례 넘김`);
+    state.current = (state.current + 1) % state.teams.length;
+    if (state.current === 0) state.round += 1;
+    state.streak = 0;
+    ui.selected = null;
+    ui.hot = null;
+    commit();
+    announce(`${state.teams[state.current].name} 차례`, state.current === 0 ? `${state.round}라운드 시작` : '');
+  }
+  function adjust(i, d) {
+    const t = state.teams[i];
+    if (!t || (d < 0 && t.score <= 0)) return;
+    pushHistory(`${t.name} 점수 ${d > 0 ? '+1' : '−1'}`);
+    t.score += d;
+    commit();
+  }
+  function undo() {
+    if (!state || dlg.open) return;
+    const h = history.pop();
+    if (!h) return;
+    clearTimeout(ui.autoTimer);
+    clearTimeout(annTimer);
+    annEl.classList.remove('show');
+    Object.assign(state, clone(h.snap));
+    ui.selected = null;
+    ui.hot = null;
+    commit();
+    toast(`되돌림: ${h.label}`);
+  }
+
+  // ---------- 대화상자 ----------
+  let dlgHandler = null;
+  function showDialog(html, actions, onResult) {
+    if (dlg.open) dlg.close();
+    dlgBody.innerHTML = html + `<div class="dlg-actions">${actions.map((a, i) =>
+      `<button type="button" class="btn${a.primary ? ' btn-primary' : ''}" data-dlg="${i}">${esc(a.label)}</button>`).join('')}</div>`;
+    dlgHandler = value => {
+      dlgHandler = null;
+      if (dlg.open) dlg.close();
+      if (onResult) onResult(value);
+    };
+    dlgBody.querySelectorAll('[data-dlg]').forEach(b => b.addEventListener('click', () => {
+      if (dlgHandler) dlgHandler(actions[+b.dataset.dlg].value);
+    }));
+    try { dlg.showModal(); } catch (_) { dlg.setAttribute('open', ''); }
+    const f = actions.findIndex(a => a.focus);
+    if (f >= 0) dlgBody.querySelector(`[data-dlg="${f}"]`).focus();
+  }
+  dlg.addEventListener('cancel', ev => { ev.preventDefault(); if (dlgHandler) dlgHandler('cancel'); });
+  dlg.addEventListener('click', ev => { if (ev.target === dlg && dlgHandler) dlgHandler('cancel'); });
+
+  function openTurnEnd(auto) {
+    if (!state || dlg.open) return;
+    closeMenu();
+    select(null);
+    const t = state.teams[state.current];
+    const nextIdx = (state.current + 1) % state.teams.length;
+    const next = state.teams[nextIdx];
+    const n = state.streak;
+    const cards = Array.from({ length: MAX_STREAK }, (_, i) => `<span class="card${i >= MAX_STREAK - n ? ' new' : ''}"></span>`).join('');
+    const refill = n > 0
+      ? `<p><strong>카드 ${n}장</strong>을 ${esc(t.name)}에게 나눠 주세요.</p>
+         <p class="muted">이번 차례에 ${n}번 성공했습니다. 보충하면 다시 ${MAX_STREAK}장이 됩니다.</p>`
+      : `<p><strong>보충할 카드 없음</strong></p><p class="muted">이번 차례에는 성공한 카드가 없습니다.</p>`;
+    showDialog(`
+      <p class="eyebrow">${state.round}라운드</p>
+      <h2>${esc(t.name)} 차례 끝</h2>
+      ${auto ? `<p class="muted">연속 성공 ${MAX_STREAK}번을 모두 채웠습니다.</p>` : ''}
+      <div class="refill"><div class="hand big" aria-hidden="true">${cards}</div>${refill}</div>
+      <p>다음 차례: <b>${esc(next.name)}</b>${nextIdx === 0 ? ` · ${state.round + 1}라운드 시작` : ''}</p>`,
+      [{ label: '취소', value: 'cancel' }, { label: `${next.name} 시작`, value: 'ok', primary: true, focus: true }],
+      v => { if (v === 'ok') nextTurn(); });
+  }
+  function openResults() {
+    closeMenu();
+    const ranked = state.teams.map((t, i) => Object.assign({ i }, t)).sort((a, b) => b.score - a.score || a.i - b.i);
+    const rows = ranked.map(t => {
+      const rank = 1 + state.teams.filter(x => x.score > t.score).length;
+      return `<li class="${rank === 1 && t.score > 0 ? 'first' : ''}"><span class="rank">${rank}위</span><span class="t-name">${esc(t.name)}</span><span class="t-score" role="img" aria-label="${t.score}점">${segNumber(t.score)}</span></li>`;
+    }).join('');
+    showDialog(`<p class="eyebrow">${state.round}라운드 진행 중</p><h2>점수 순위</h2><ol class="results">${rows}</ol>`,
+      [{ label: '새 게임 설정', value: 'new' }, { label: '계속하기', value: 'ok', primary: true, focus: true }],
+      v => { if (v === 'new') confirmNewGame(); });
+  }
+  function confirmNewGame() {
+    closeMenu();
+    showDialog(`<h2>새 게임을 준비할까요?</h2><p class="muted">지금 점수와 차례 기록이 지워집니다. 저장한 시작 모양은 그대로 남습니다.</p>`,
+      [{ label: '취소', value: 'cancel', focus: true }, { label: '점수 지우고 새로 설정', value: 'ok', primary: true }],
+      v => {
+        if (v !== 'ok') return;
+        store.del(KEY_GAME);
+        state = null;
+        history = [];
+        showSetup();
+      });
+  }
+
+  // ---------- 메뉴 ----------
+  function closeMenu() { menuEl.hidden = true; $('btnMenu').setAttribute('aria-expanded', 'false'); }
+  function toggleMenu() {
+    menuEl.hidden = !menuEl.hidden;
+    $('btnMenu').setAttribute('aria-expanded', menuEl.hidden ? 'false' : 'true');
+  }
+  function saveStart() {
+    state.start = clone(state.sticks);
+    store.set(KEY_START, state.start);
+    save();
+    toast('지금 모양을 시작 모양으로 저장했습니다');
+  }
+  function resetToStart() {
+    if (state.sticks.every((s, i) => sameEdge(s, state.start[i]))) { toast('이미 시작 모양입니다'); return; }
+    pushHistory('막대를 시작 모양으로');
+    state.sticks = clone(state.start);
+    ui.selected = null;
+    commit();
+  }
+
+  // ---------- 전체화면 ----------
+  const fsElement = () => document.fullscreenElement || document.webkitFullscreenElement || null;
+  function setFocus(on) {
+    ui.focus = on;
+    gameEl.classList.toggle('focus', on);
+    $('btnFull').setAttribute('aria-pressed', on ? 'true' : 'false');
+  }
+  function enterFocus() {
+    setFocus(true);
+    const el = document.documentElement;
+    const req = el.requestFullscreen || el.webkitRequestFullscreen;
+    if (req && !fsElement()) {
+      try { const p = req.call(el); if (p && p.catch) p.catch(() => {}); } catch (_) { /* 전체화면을 못 쓰면 앱 안에서만 크게 */ }
+    }
+  }
+  function exitFocus() {
+    if (ui.focus) setFocus(false);
+    if (fsElement()) {
+      const ex = document.exitFullscreen || document.webkitExitFullscreen;
+      try { const p = ex.call(document); if (p && p.catch) p.catch(() => {}); } catch (_) { /* 무시 */ }
+    }
+  }
+  const toggleFocus = () => (ui.focus ? exitFocus() : enterFocus());
+  ['fullscreenchange', 'webkitfullscreenchange'].forEach(name => document.addEventListener(name, () => {
+    if (!fsElement() && ui.focus) setFocus(false);
+  }));
+
+  // 수업 중 화면 꺼짐 방지 (지원하는 브라우저만)
+  let wakeLock = null;
+  async function requestWakeLock() {
+    try {
+      if ('wakeLock' in navigator && !wakeLock && document.visibilityState === 'visible') {
+        wakeLock = await navigator.wakeLock.request('screen');
+        wakeLock.addEventListener('release', () => { wakeLock = null; });
+      }
+    } catch (_) { wakeLock = null; }
+  }
+  document.addEventListener('visibilitychange', () => {
+    if (document.visibilityState === 'visible' && state && !gameEl.hidden) requestWakeLock();
+  });
+
+  // ---------- 화면 전환 ----------
+  function renderSetup() {
+    const saved = loadSaved();
+    $('resumeRow').hidden = !saved;
+    $('overwriteNote').hidden = !saved;
+    if (saved) {
+      const s = saved.state;
+      $('resumeInfo').textContent = `${s.teams.length}팀 · ${s.round}라운드 · ${s.teams[s.current].name} 차례`;
+    }
+    document.querySelectorAll('.count-btn').forEach(b => b.setAttribute('aria-pressed', +b.dataset.n === prefs.teamCount ? 'true' : 'false'));
+    for (let i = 0; i < MAX_TEAMS; i++) $('nameField' + i).hidden = i >= prefs.teamCount;
+    $('previewBox').innerHTML = previewSVG(startLayout());
+  }
+  function showSetup() {
+    closeMenu();
+    exitFocus();
+    gameEl.hidden = true;
+    setupEl.hidden = false;
+    for (let i = 0; i < MAX_TEAMS; i++) $('team-name-' + i).value = prefs.names[i] || '';
+    renderSetup();
+  }
+  function showGame() {
+    setupEl.hidden = true;
+    gameEl.hidden = false;
+    ui.selected = null;
+    ui.hot = null;
+    commit();
+    requestWakeLock();
+  }
+  function startGame() {
+    const count = prefs.teamCount;
+    const names = [];
+    const teams = [];
+    for (let i = 0; i < count; i++) {
+      const raw = $('team-name-' + i).value.trim();
+      names.push(raw);
+      teams.push({ name: raw || `${i + 1}팀`, score: 0 });
+    }
+    prefs.names = names;
+    savePrefs();
+    const start = startLayout();
+    state = { teams, current: 0, streak: 0, round: 1, sticks: clone(start), start: clone(start) };
+    history = [];
+    showGame();
+    announce(`${teams[0].name} 차례`, '1라운드 시작');
+  }
+  function resume() {
+    const saved = loadSaved();
+    if (!saved) { renderSetup(); return; }
+    state = saved.state;
+    history = saved.history;
+    showGame();
+    announce(`${state.teams[state.current].name} 차례`, `${state.round}라운드 이어서`);
+  }
+
+  // ---------- 입력 ----------
+  $('setupForm').addEventListener('submit', ev => { ev.preventDefault(); startGame(); });
+  document.addEventListener('click', ev => {
+    if (!ev.target.closest('.menu-wrap')) closeMenu();
+    const a = ev.target.closest('[data-action]');
+    if (!a || a.disabled) return;
+    const act = a.dataset.action;
+    if (act === 'count') { prefs.teamCount = +a.dataset.n; savePrefs(); renderSetup(); return; }
+    if (act === 'resume') { resume(); return; }
+    if (!state) return;
+    switch (act) {
+      case 'success': success(); break;
+      case 'pass': openTurnEnd(false); break;
+      case 'undo': undo(); break;
+      case 'focus': toggleFocus(); break;
+      case 'labels': prefs.labels = !prefs.labels; savePrefs(); renderBoard(); renderPanel(); break;
+      case 'menu': toggleMenu(); break;
+      case 'save-start': closeMenu(); saveStart(); break;
+      case 'reset-start': closeMenu(); resetToStart(); break;
+      case 'results': openResults(); break;
+      case 'new-game': confirmNewGame(); break;
+      case 'adj': adjust(+a.dataset.i, +a.dataset.d); break;
+      case 'pick': { const id = +a.dataset.id; select(ui.selected === id ? null : id); break; }
+    }
+  });
+  document.addEventListener('keydown', ev => {
+    if (!state || gameEl.hidden || dlg.open) return;
+    if (ev.target.closest && ev.target.closest('input, textarea, select, [contenteditable="true"]')) return;
+    const mod = ev.ctrlKey || ev.metaKey;
+    if (mod && ev.code === 'KeyZ') { ev.preventDefault(); undo(); return; }
+    if (mod || ev.altKey) return;
+    if (ev.key === 'Escape') {
+      if (!menuEl.hidden) closeMenu();
+      else if (ui.selected !== null) select(null);
+      else if (ui.focus) exitFocus();
+      return;
+    }
+    const num = /^(?:Digit|Numpad)([1-5])$/.exec(ev.code);
+    if (num) { ev.preventDefault(); const id = +num[1] - 1; select(ui.selected === id ? null : id); return; }
+    const arrows = { ArrowLeft: [-1, 0], ArrowRight: [1, 0], ArrowUp: [0, -1], ArrowDown: [0, 1] };
+    if (arrows[ev.key] && ui.selected !== null) { ev.preventDefault(); nudge(...arrows[ev.key]); return; }
+    // 한글 입력 상태에서도 동작하도록 ev.code로 판별
+    switch (ev.code) {
+      case 'KeyS': ev.preventDefault(); success(); break;
+      case 'KeyN': ev.preventDefault(); openTurnEnd(false); break;
+      case 'KeyF': ev.preventDefault(); toggleFocus(); break;
+      case 'KeyZ': ev.preventDefault(); undo(); break;
+      case 'KeyR': if (ui.selected !== null) { ev.preventDefault(); rotateSelected(); } break;
+    }
+  });
+
+  // ---------- 시작 ----------
+  function boot(data) {
+    buildBoard();
+    if (data && data.state && gameValid(data.state)) {
+      state = data.state;
+      history = Array.isArray(data.history) ? data.history : [];
+      showGame();
+      if (data.focus) setFocus(true);
+    } else {
+      showSetup();
+    }
+  }
+  const hot = window.claude && window.claude.hot;
+  if (hot && typeof hot.snapshot === 'function') {
+    hot.snapshot(() => ({ state: state && !gameEl.hidden ? state : null, history, focus: ui.focus }));
+  }
+  if (hot && typeof hot.ready === 'function') hot.ready(boot);
+  else boot((hot && hot.data) || {});
+})();
+</script>
+</body>
+</html>
