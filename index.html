@@ -703,6 +703,7 @@ dialog::backdrop { background: var(--scrim); }
       <div class="wm">DIGIT<small>교실판</small></div>
       <div class="spacer"></div>
       <button type="button" class="btn" data-action="labels" id="btnLabels" aria-pressed="false">막대에 색 이름</button>
+      <button type="button" class="btn" data-action="center">가운데로 모으기 <kbd>C</kbd></button>
       <button type="button" class="btn" data-action="undo">되돌리기 <kbd>Z</kbd></button>
       <button type="button" class="btn" data-action="focus" id="btnFull">전체화면 <kbd>F</kbd></button>
       <div class="menu-wrap">
@@ -723,6 +724,7 @@ dialog::backdrop { background: var(--scrim); }
       <div class="spacer"></div>
       <button type="button" class="btn btn-primary" data-action="success">성공 +1 <kbd>S</kbd></button>
       <button type="button" class="btn" data-action="pass">차례 넘기기 <kbd>N</kbd></button>
+      <button type="button" class="btn" data-action="center">가운데로 <kbd>C</kbd></button>
       <button type="button" class="btn" data-action="undo">되돌리기</button>
       <button type="button" class="btn" data-action="focus">전체화면 끝내기</button>
     </div>
@@ -756,7 +758,7 @@ dialog::backdrop { background: var(--scrim); }
           <h3 class="section-label">점수</h3>
           <ol class="team-list" id="teamList"></ol>
         </section>
-        <p class="keys">키보드: 1–5 막대 고르기 · 방향키 한 칸 이동 · R 세우기/눕히기 · Z 되돌리기 · F 전체화면 · Esc 선택 취소</p>
+        <p class="keys">키보드: 1–5 막대 고르기 · 방향키 한 칸 이동 · R 세우기/눕히기 · C 가운데로 모으기 · Z 되돌리기 · F 전체화면 · Esc 선택 취소</p>
       </aside>
     </main>
   </section>
@@ -1257,6 +1259,26 @@ dialog::backdrop { background: var(--scrim); }
     save();
     toast('지금 모양을 시작 모양으로 저장했습니다');
   }
+  // 모양은 그대로 두고 막대 전체를 판 가운데로 평행 이동
+  function centerSticks() {
+    if (!state) return;
+    let minX = Infinity, maxX = -Infinity, minY = Infinity, maxY = -Infinity;
+    state.sticks.forEach(s => {
+      minX = Math.min(minX, s.x); minY = Math.min(minY, s.y);
+      maxX = Math.max(maxX, s.o === 'h' ? s.x + 1 : s.x);
+      maxY = Math.max(maxY, s.o === 'v' ? s.y + 1 : s.y);
+    });
+    const dx = Math.round((COLS - minX - maxX) / 2);
+    const dy = Math.round((ROWS - minY - maxY) / 2);
+    if (dx === 0 && dy === 0) { toast('이미 가운데에 있습니다'); return; }
+    const moved = state.sticks.map(s => ({ o: s.o, x: s.x + dx, y: s.y + dy }));
+    if (!layoutValid(moved)) return;
+    pushHistory('막대 가운데로 모으기');
+    state.sticks = moved;
+    ui.selected = null;
+    ui.hot = null;
+    commit();
+  }
   function resetToStart() {
     if (state.sticks.every((s, i) => sameEdge(s, state.start[i]))) { toast('이미 시작 모양입니다'); return; }
     pushHistory('막대를 시작 모양으로');
@@ -1380,6 +1402,7 @@ dialog::backdrop { background: var(--scrim); }
       case 'menu': toggleMenu(); break;
       case 'save-start': closeMenu(); saveStart(); break;
       case 'reset-start': closeMenu(); resetToStart(); break;
+      case 'center': centerSticks(); break;
       case 'results': openResults(); break;
       case 'new-game': confirmNewGame(); break;
       case 'adj': adjust(+a.dataset.i, +a.dataset.d); break;
@@ -1408,6 +1431,7 @@ dialog::backdrop { background: var(--scrim); }
       case 'KeyN': ev.preventDefault(); openTurnEnd(false); break;
       case 'KeyF': ev.preventDefault(); toggleFocus(); break;
       case 'KeyZ': ev.preventDefault(); undo(); break;
+      case 'KeyC': ev.preventDefault(); centerSticks(); break;
       case 'KeyR': if (ui.selected !== null) { ev.preventDefault(); rotateSelected(); } break;
     }
   });
