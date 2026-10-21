@@ -35,6 +35,8 @@ html, body { height: 100%; }
   --green: #2a9853;
   --blue: #2b72d4;
   --purple: #864fcb;
+  --alert: #c2410c;
+  --on-alert: #ffffff;
 
   --font-display: "Black Han Sans", "Malgun Gothic", "Apple SD Gothic Neo", sans-serif;
   --font-body: "IBM Plex Sans KR", "Apple SD Gothic Neo", "Malgun Gothic", "Noto Sans KR", system-ui, sans-serif;
@@ -61,6 +63,8 @@ html, body { height: 100%; }
     --green: #35b064;
     --blue: #4a8df0;
     --purple: #a06ce6;
+    --alert: #fb923c;
+    --on-alert: #1f0d00;
     color-scheme: dark;
   }
 }
@@ -85,6 +89,8 @@ html, body { height: 100%; }
   --green: #35b064;
   --blue: #4a8df0;
   --purple: #a06ce6;
+  --alert: #fb923c;
+  --on-alert: #1f0d00;
   color-scheme: dark;
 }
 
@@ -558,6 +564,92 @@ fieldset { margin: 0; padding: 0; border: 0; min-width: 0; }
 @keyframes bump { 0% { transform: scale(1); } 30% { transform: scale(1.2); } 100% { transform: scale(1); } }
 .keys { margin: 0; font-size: 12px; line-height: 1.7; color: var(--muted); }
 
+/* turn timer */
+.timer {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr);
+  align-items: center;
+  gap: 10px 14px;
+  padding: 12px 14px;
+  border-radius: 12px;
+  background: var(--surface-2);
+}
+.clock { display: flex; align-items: stretch; gap: 4px; height: 46px; }
+.clock.low { --seg-on: var(--alert); }
+.clock.expired { --seg-on: var(--alert); animation: blink 1s steps(1, end) infinite; }
+@keyframes blink { 50% { opacity: .25; } }
+.timer-side { display: grid; gap: 6px; justify-items: start; min-width: 0; }
+.timer-state { font-size: 13px; font-weight: 700; color: var(--muted); }
+.timer.is-expired .timer-state { color: var(--alert); }
+.timer-btns { display: flex; flex-wrap: wrap; gap: 6px; }
+.btn-sm { min-height: 32px; padding: 6px 10px; border-radius: 8px; font-size: 13px; }
+.timer-bar { grid-column: 1 / -1; height: 4px; border-radius: 2px; background: var(--seg-off); overflow: hidden; }
+.timer-bar i { display: block; width: 100%; height: 100%; background: var(--ink); transition: width .25s linear; }
+.timer.is-low .timer-bar i { background: var(--alert); }
+.link-btn {
+  justify-self: start;
+  padding: 0;
+  border: 0;
+  background: none;
+  color: var(--muted);
+  font: 600 13px/1.4 var(--font-body);
+  text-decoration: underline;
+  text-underline-offset: 3px;
+  cursor: pointer;
+}
+.btn.nudge { border-color: var(--alert); box-shadow: 0 0 0 3px var(--alert); }
+.fb-clock { display: flex; align-items: center; gap: 8px; }
+.fb-clock .clock { height: 54px; }
+.timeup {
+  position: absolute;
+  left: 50%;
+  bottom: 5%;
+  z-index: 6;
+  max-width: 90%;
+  padding: .9cqw 2.6cqw;
+  border-radius: 999px;
+  background: var(--alert);
+  color: var(--on-alert);
+  font-family: var(--font-display);
+  font-size: 3.6cqw;
+  line-height: 1.1;
+  text-align: center;
+  white-space: nowrap;
+  pointer-events: none;
+  transform: translateX(-50%);
+}
+.timeup small { display: block; margin-top: .3cqw; font: 600 1.4cqw/1.2 var(--font-body); }
+
+/* time-limit fields (setup + dialog) */
+.tl-fields { display: grid; gap: 10px; }
+.preset-group { display: flex; flex-wrap: wrap; gap: 6px; }
+.preset {
+  min-height: 40px;
+  padding: 8px 12px;
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  background: var(--surface-2);
+  color: var(--ink);
+  font: 700 14px/1 var(--font-body);
+  cursor: pointer;
+}
+.preset:hover { border-color: var(--grid-strong); }
+.preset[aria-pressed="true"] { background: var(--ink); border-color: var(--ink); color: var(--on-ink); }
+.tl-custom { display: flex; flex-wrap: wrap; align-items: center; gap: 8px 12px; font-size: 14px; font-weight: 600; color: var(--muted); }
+.tl-custom label { display: inline-flex; align-items: center; gap: 6px; color: var(--ink); }
+.tl-custom input {
+  width: 4.5em;
+  padding: 8px 10px;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: var(--surface-2);
+  color: var(--ink);
+  font: 600 16px/1.2 var(--font-body);
+  font-variant-numeric: tabular-nums;
+}
+.check { display: flex; align-items: center; gap: 8px; font-size: 14px; cursor: pointer; }
+.check input { width: 18px; height: 18px; margin: 0; accent-color: var(--ink); }
+
 /* focus (fullscreen) mode: board only, one control strip */
 .game.focus .topbar, .game.focus .panel, .game.focus .hint { display: none; }
 .game.focus .focusbar { display: flex; }
@@ -683,6 +775,11 @@ dialog::backdrop { background: var(--scrim); }
           </div>
         </fieldset>
 
+        <fieldset>
+          <legend class="field-label">차례 시간제한 <span>시간이 끝나도 자동으로 넘어가지 않습니다</span></legend>
+          <div class="tl-fields" id="setupTimer"></div>
+        </fieldset>
+
         <dl class="rules">
           <div><dt>진행 순서</dt><dd>1팀부터 차례대로 돌아갑니다.</dd></div>
           <div><dt>한 번에</dt><dd>막대 1개를 옮겨 카드의 모양을 만듭니다.</dd></div>
@@ -712,6 +809,7 @@ dialog::backdrop { background: var(--scrim); }
           <button type="button" class="menu-item" data-action="save-start">지금 모양을 시작 모양으로 저장</button>
           <button type="button" class="menu-item" data-action="reset-start">막대를 시작 모양으로 되돌리기</button>
           <hr>
+          <button type="button" class="menu-item" data-action="timer-settings">차례 시간제한 설정</button>
           <button type="button" class="menu-item" data-action="results">점수 순위 보기</button>
           <button type="button" class="menu-item" data-action="new-game">새 게임 설정</button>
         </div>
@@ -721,6 +819,10 @@ dialog::backdrop { background: var(--scrim); }
     <div class="focusbar">
       <div class="fb-id"><span class="fb-round" id="fbRound"></span><span class="fb-team" id="fbTeam"></span></div>
       <div class="hand small" id="fbHand" aria-hidden="true"></div>
+      <div class="fb-clock" id="fbClockWrap" hidden>
+        <div class="clock" id="fbClock" role="timer"></div>
+        <button type="button" class="btn" data-action="timer-toggle"><span class="tt-label">멈춤</span> <kbd>T</kbd></button>
+      </div>
       <div class="spacer"></div>
       <button type="button" class="btn btn-primary" data-action="success">성공 +1 <kbd>S</kbd></button>
       <button type="button" class="btn" data-action="pass">차례 넘기기 <kbd>N</kbd></button>
@@ -735,6 +837,7 @@ dialog::backdrop { background: var(--scrim); }
           <div class="board" id="board" role="group" aria-label="게임판">
             <div class="ghost" id="ghost" hidden></div>
             <div class="announce" id="announce" role="status"></div>
+            <div class="timeup" id="timeup" hidden></div>
           </div>
         </div>
         <div class="board-foot">
@@ -749,6 +852,19 @@ dialog::backdrop { background: var(--scrim); }
           <h2 class="turn-name" id="turnName"></h2>
           <div class="hand" id="hand" aria-hidden="true"></div>
           <p class="hand-cap" id="handCap"></p>
+          <div class="timer" id="timerBox" hidden>
+            <div class="clock" id="clock" role="timer"></div>
+            <div class="timer-side">
+              <span class="timer-state" id="timerState">남은 시간</span>
+              <div class="timer-btns">
+                <button type="button" class="btn btn-sm" data-action="timer-toggle"><span class="tt-label">멈춤</span> <kbd>T</kbd></button>
+                <button type="button" class="btn btn-sm" data-action="timer-reset">처음부터</button>
+                <button type="button" class="btn btn-sm" data-action="timer-settings">설정</button>
+              </div>
+            </div>
+            <div class="timer-bar" aria-hidden="true"><i id="timerBar"></i></div>
+          </div>
+          <button type="button" class="link-btn" data-action="timer-settings" id="timerOff">시간제한 없음 · 설정하기</button>
           <div class="turn-actions">
             <button type="button" class="btn btn-primary btn-xl" data-action="success">성공 +1 <kbd>S</kbd></button>
             <button type="button" class="btn" data-action="pass">차례 넘기기 <kbd>N</kbd></button>
@@ -758,7 +874,7 @@ dialog::backdrop { background: var(--scrim); }
           <h3 class="section-label">점수</h3>
           <ol class="team-list" id="teamList"></ol>
         </section>
-        <p class="keys">키보드: 1–5 막대 고르기 · 방향키 한 칸 이동 · R 세우기/눕히기 · C 가운데로 모으기 · Z 되돌리기 · F 전체화면 · Esc 선택 취소</p>
+        <p class="keys">키보드: 1–5 막대 고르기 · 방향키 한 칸 이동 · R 세우기/눕히기 · C 가운데로 모으기 · T 타이머 멈춤/계속 · Z 되돌리기 · F 전체화면 · Esc 선택 취소</p>
       </aside>
     </main>
   </section>
@@ -796,6 +912,9 @@ dialog::backdrop { background: var(--scrim); }
   const KEY_GAME = 'digit-classroom:game';
   const KEY_START = 'digit-classroom:start';
   const KEY_PREFS = 'digit-classroom:prefs';
+  const KEY_CLOCK = 'digit-classroom:clock';
+  const TIME_PRESETS = [0, 30, 60, 90, 120, 180];   // 초 (0 = 시간제한 없음)
+  const MAX_LIMIT = 30 * 60;
 
   // ---------- 저장소 (실패해도 앱은 동작) ----------
   const store = {
@@ -843,7 +962,8 @@ dialog::backdrop { background: var(--scrim); }
   let state = null;     // { teams:[{name,score}], current, streak, round, sticks, start }
   let history = [];     // [{ label, snap }]
   const ui = { selected: null, hot: null, drag: null, focus: false, autoTimer: 0 };
-  const prefs = Object.assign({ labels: false, teamCount: 4, names: [] }, store.get(KEY_PREFS) || {});
+  const prefs = Object.assign({ labels: false, teamCount: 4, names: [], timeLimit: 0, timerRefill: true, timerSound: true }, store.get(KEY_PREFS) || {});
+  if (!(Number.isInteger(prefs.timeLimit) && prefs.timeLimit >= 0 && prefs.timeLimit <= MAX_LIMIT)) prefs.timeLimit = 0;
   if (!(prefs.teamCount >= MIN_TEAMS && prefs.teamCount <= MAX_TEAMS)) prefs.teamCount = 4;
   if (!Array.isArray(prefs.names)) prefs.names = [];
 
@@ -857,7 +977,7 @@ dialog::backdrop { background: var(--scrim); }
   const dlgBody = $('dlgBody');
   const stickEls = [];
 
-  function save() { if (state) store.set(KEY_GAME, { v: 1, state, history }); }
+  function save() { if (state) { store.set(KEY_GAME, { v: 1, state, history }); saveClock(); } }
   function savePrefs() { store.set(KEY_PREFS, prefs); }
   function loadSaved() {
     const d = store.get(KEY_GAME);
@@ -867,10 +987,12 @@ dialog::backdrop { background: var(--scrim); }
       : [];
     return { state: d.state, history: h.slice(-HISTORY_LIMIT) };
   }
-  function pushHistory(label) {
+  // clk: 성공·차례 넘김처럼 타이머가 바뀌는 동작이면 그 직전 타이머 상태를 함께 기록
+  function pushHistory(label, clk) {
     history.push({
       label,
       snap: clone({ teams: state.teams, current: state.current, streak: state.streak, round: state.round, sticks: state.sticks }),
+      clock: clk || null,
     });
     if (history.length > HISTORY_LIMIT) history.shift();
   }
@@ -1012,6 +1134,199 @@ dialog::backdrop { background: var(--scrim); }
     clearTimeout(annTimer);
     annTimer = setTimeout(() => annEl.classList.remove('show'), 2300);
   }
+  // ---------- 차례 타이머 ----------
+  // remaining은 ms. 0 아래로 내려가면 시간 초과(음수 = 초과한 시간). 끝나도 자동으로 넘기지 않음.
+  const clock = { limit: 0, remaining: 0, running: false, endsAt: 0, alerted: false };
+  const clockOn = () => !!state && clock.limit > 0;
+  const clockRemaining = () => (clock.running ? clock.endsAt - Date.now() : clock.remaining);
+  function fmtDur(sec) {
+    const m = Math.floor(sec / 60), r = sec % 60;
+    return m && r ? `${m}분 ${r}초` : m ? `${m}분` : `${r}초`;
+  }
+  const fmtLimit = sec => (sec > 0 ? fmtDur(sec) : '없음');
+  function clockSnap() {
+    return { limit: clock.limit, remaining: clockRemaining(), running: clock.running, alerted: clock.alerted };
+  }
+  function clockValid(c) {
+    return !!c && Number.isInteger(c.limit) && c.limit >= 0 && c.limit <= MAX_LIMIT && Number.isFinite(c.remaining);
+  }
+  function setClock(c, running) {
+    clock.limit = c.limit;
+    clock.remaining = c.remaining;
+    clock.alerted = !!c.alerted;
+    clock.running = !!running && c.limit > 0;
+    clock.endsAt = Date.now() + c.remaining;
+    saveClock();
+    renderClock(true);
+  }
+  function saveClock() { if (state) store.set(KEY_CLOCK, clockSnap()); }
+  function clockStart() {
+    setClock({ limit: prefs.timeLimit, remaining: prefs.timeLimit * 1000, alerted: false }, true);
+  }
+  function clockPause() {
+    if (!clock.running) return;
+    clock.remaining = clockRemaining();
+    clock.running = false;
+    saveClock();
+    renderClock(true);
+  }
+  function clockResume() {
+    if (clock.running || !clockOn()) return;
+    clock.endsAt = Date.now() + clock.remaining;
+    clock.running = true;
+    saveClock();
+    renderClock(true);
+  }
+  const clockToggle = () => (clock.running ? clockPause() : clockResume());
+
+  function segClock(text) {
+    return text.split('').map(c => (c === ':'
+      ? '<svg class="seg" viewBox="0 0 4 20" aria-hidden="true"><rect x="1" y="5.5" width="2" height="2" rx="0.6" class="on"/><rect x="1" y="12.5" width="2" height="2" rx="0.6" class="on"/></svg>'
+      : segDigit(+c))).join('');
+  }
+  let clockKey = '';
+  function renderClock(force) {
+    const on = clockOn() && !gameEl.hidden;
+    $('timerBox').hidden = !on;
+    $('fbClockWrap').hidden = !on;
+    $('timerOff').hidden = !state || clock.limit > 0;
+    const passBtns = document.querySelectorAll('[data-action="pass"]');
+    if (!on) {
+      $('timeup').hidden = true;
+      passBtns.forEach(b => b.classList.remove('nudge'));
+      clockKey = '';
+      return;
+    }
+    const rem = clockRemaining();
+    const expired = rem <= 0;
+    const secs = expired ? 0 : Math.ceil(rem / 1000);
+    const over = expired ? Math.floor(-rem / 1000) : 0;
+    const low = !expired && secs <= 10;
+    $('timerBar').style.width = (expired ? 0 : Math.min(1, rem / (clock.limit * 1000)) * 100) + '%';
+    const key = `${secs}|${over}|${clock.running}|${clock.limit}`;
+    if (!force && key === clockKey) return;
+    clockKey = key;
+    const text = `${Math.floor(secs / 60)}:${String(secs % 60).padStart(2, '0')}`;
+    ['clock', 'fbClock'].forEach(id => {
+      const el = $(id);
+      el.innerHTML = segClock(text);
+      el.classList.toggle('low', low);
+      el.classList.toggle('expired', expired);
+      el.setAttribute('aria-label', expired ? '시간 끝' : `남은 시간 ${fmtDur(secs)}`);
+    });
+    const box = $('timerBox');
+    box.classList.toggle('is-low', low);
+    box.classList.toggle('is-expired', expired);
+    $('timerState').textContent = expired
+      ? `시간 끝 · ${fmtDur(over)} 지남${clock.running ? '' : ' (멈춤)'}`
+      : clock.running ? `남은 시간 · 제한 ${fmtDur(clock.limit)}` : '멈춤';
+    document.querySelectorAll('.tt-label').forEach(l => { l.textContent = clock.running ? '멈춤' : '계속'; });
+    const tu = $('timeup');
+    tu.hidden = !expired;
+    if (expired) tu.innerHTML = `시간 끝!<small>${fmtDur(over)} 지남</small>`;
+    passBtns.forEach(b => b.classList.toggle('nudge', expired));
+  }
+
+  // 소리: 브라우저 정책상 사용자가 화면을 한 번 누른 뒤에만 남
+  let audioCtx = null;
+  function unlockAudio() {
+    try {
+      const AC = window.AudioContext || window.webkitAudioContext;
+      if (!AC) return;
+      if (!audioCtx) audioCtx = new AC();
+      if (audioCtx.state === 'suspended') audioCtx.resume();
+    } catch (_) { audioCtx = null; }
+  }
+  ['pointerdown', 'keydown'].forEach(n => document.addEventListener(n, unlockAudio, { passive: true }));
+  function buzzer() {
+    if (!prefs.timerSound || !audioCtx) return;
+    try {
+      const t0 = audioCtx.currentTime + 0.02;
+      [[0, 880, 0.2], [0.3, 880, 0.2], [0.6, 660, 0.55]].forEach(([d, f, len]) => {
+        const o = audioCtx.createOscillator();
+        const g = audioCtx.createGain();
+        o.type = 'square';
+        o.frequency.value = f;
+        g.gain.setValueAtTime(0.0001, t0 + d);
+        g.gain.exponentialRampToValueAtTime(0.2, t0 + d + 0.02);
+        g.gain.exponentialRampToValueAtTime(0.0001, t0 + d + len);
+        o.connect(g);
+        g.connect(audioCtx.destination);
+        o.start(t0 + d);
+        o.stop(t0 + d + len + 0.05);
+      });
+    } catch (_) { /* 소리 없이 진행 */ }
+  }
+  let lastClockSave = 0;
+  setInterval(() => {
+    if (!clockOn() || gameEl.hidden) return;
+    if (clock.running && clockRemaining() <= 0 && !clock.alerted) {
+      clock.alerted = true;
+      buzzer();
+      saveClock();
+    }
+    renderClock(false);
+    if (clock.running && Date.now() - lastClockSave > 1000) { lastClockSave = Date.now(); saveClock(); }
+  }, 200);
+
+  // 시간제한 입력칸 (설정 화면과 게임 중 대화상자에서 같이 씀)
+  function timerFieldsHTML(p, limit, refill, sound) {
+    return `
+      <div class="preset-group" role="group" aria-label="시간 고르기">${TIME_PRESETS.map(v =>
+        `<button type="button" class="preset" data-tl-preset="${v}" data-tl-for="${p}" aria-pressed="${v === limit}">${fmtLimit(v)}</button>`).join('')}</div>
+      <div class="tl-custom">직접 입력
+        <label><input id="${p}-min" type="number" min="0" max="30" inputmode="numeric" value="${Math.floor(limit / 60)}"> 분</label>
+        <label><input id="${p}-sec" type="number" min="0" max="59" step="5" inputmode="numeric" value="${limit % 60}"> 초</label>
+      </div>
+      <label class="check"><input type="checkbox" id="${p}-refill"${refill ? ' checked' : ''}> 성공하면 시간을 처음부터 다시 주기</label>
+      <label class="check"><input type="checkbox" id="${p}-sound"${sound ? ' checked' : ''}> 시간이 끝나면 소리 내기</label>`;
+  }
+  function readTimerFields(p) {
+    const num = id => { const v = parseInt($(id).value, 10); return Number.isFinite(v) && v > 0 ? v : 0; };
+    const limit = Math.min(MAX_LIMIT, num(`${p}-min`) * 60 + Math.min(59, num(`${p}-sec`)));
+    return { limit, refill: $(`${p}-refill`).checked, sound: $(`${p}-sound`).checked };
+  }
+  function syncPresets(p) {
+    const { limit } = readTimerFields(p);
+    document.querySelectorAll(`[data-tl-for="${p}"]`).forEach(b => b.setAttribute('aria-pressed', +b.dataset.tlPreset === limit ? 'true' : 'false'));
+  }
+  document.addEventListener('input', ev => {
+    const m = /^(.+)-(min|sec)$/.exec(ev.target.id || '');
+    if (m) syncPresets(m[1]);
+  });
+  function applyTimerPrefs(f) {
+    prefs.timeLimit = f.limit;
+    prefs.timerRefill = f.refill;
+    prefs.timerSound = f.sound;
+    savePrefs();
+  }
+  function openTimerSettings() {
+    closeMenu();
+    const wasRunning = clock.running;
+    showDialog(`
+      <h2>차례 시간제한</h2>
+      <p class="muted">시간이 끝나면 "시간 끝!"을 띄우고 기다립니다. 다음 팀으로는 직접 넘겨 주세요.</p>
+      <div class="tl-fields">${timerFieldsHTML('dlg-tl', prefs.timeLimit, prefs.timerRefill, prefs.timerSound)}</div>`,
+      [{ label: '취소', value: 'cancel' }, { label: '저장', value: 'ok', primary: true, focus: true }],
+      v => {
+        if (v !== 'ok') return;
+        const f = readTimerFields('dlg-tl');
+        const prevLimit = clock.limit;
+        const changed = f.limit !== prevLimit;
+        applyTimerPrefs(f);
+        if (!changed) { toast('타이머 설정을 저장했습니다'); return; }
+        if (f.limit > 0) {
+          clockStart();
+          // 멈춰 둔 타이머였다면 새 시간으로 채우기만 하고 멈춘 상태 유지
+          if (!wasRunning && prevLimit > 0) clockPause();
+          toast(`시간제한을 ${fmtDur(f.limit)}로 정했습니다. 지금 차례부터 다시 셉니다`);
+        } else {
+          setClock({ limit: 0, remaining: 0, alerted: false }, false);
+          toast('시간제한을 껐습니다');
+        }
+      });
+  }
+
   let toastTimer = 0;
   function toast(msg) {
     const el = $('toast');
@@ -1135,11 +1450,12 @@ dialog::backdrop { background: var(--scrim); }
   function success() {
     if (!state || state.streak >= MAX_STREAK || dlg.open) return;
     const t = state.teams[state.current];
-    pushHistory(`${t.name} 성공`);
+    pushHistory(`${t.name} 성공`, clockSnap());
     t.score += 1;
     state.streak += 1;
     select(null);
     commit();
+    if (clockOn() && prefs.timerRefill && state.streak < MAX_STREAK) clockStart();
     const row = document.querySelector(`.team[data-i="${state.current}"]`);
     if (row) row.classList.add('bump');
     announce(`${t.name} 성공!`, `이번 차례 ${state.streak}번째 · ${t.score}점`);
@@ -1148,15 +1464,16 @@ dialog::backdrop { background: var(--scrim); }
       ui.autoTimer = setTimeout(() => { if (state && state.streak >= MAX_STREAK) openTurnEnd(true); }, 900);
     }
   }
-  function nextTurn() {
+  function nextTurn(clk) {
     const prev = state.teams[state.current];
-    pushHistory(`${prev.name} 차례 넘김`);
+    pushHistory(`${prev.name} 차례 넘김`, clk || clockSnap());
     state.current = (state.current + 1) % state.teams.length;
     if (state.current === 0) state.round += 1;
     state.streak = 0;
     ui.selected = null;
     ui.hot = null;
     commit();
+    if (prefs.timeLimit > 0 || clock.limit > 0) clockStart();
     announce(`${state.teams[state.current].name} 차례`, state.current === 0 ? `${state.round}라운드 시작` : '');
   }
   function adjust(i, d) {
@@ -1177,6 +1494,7 @@ dialog::backdrop { background: var(--scrim); }
     ui.selected = null;
     ui.hot = null;
     commit();
+    if (clockValid(h.clock)) setClock(h.clock, h.clock.running);
     toast(`되돌림: ${h.label}`);
   }
 
@@ -1206,6 +1524,9 @@ dialog::backdrop { background: var(--scrim); }
     closeMenu();
     select(null);
     const t = state.teams[state.current];
+    // 대화상자가 떠 있는 동안 타이머를 멈추고, 취소하면 이어서 셈
+    const clk = clockSnap();
+    clockPause();
     const nextIdx = (state.current + 1) % state.teams.length;
     const next = state.teams[nextIdx];
     const n = state.streak;
@@ -1221,7 +1542,10 @@ dialog::backdrop { background: var(--scrim); }
       <div class="refill"><div class="hand big" aria-hidden="true">${cards}</div>${refill}</div>
       <p>다음 차례: <b>${esc(next.name)}</b>${nextIdx === 0 ? ` · ${state.round + 1}라운드 시작` : ''}</p>`,
       [{ label: '취소', value: 'cancel' }, { label: `${next.name} 시작`, value: 'ok', primary: true, focus: true }],
-      v => { if (v === 'ok') nextTurn(); });
+      v => {
+        if (v === 'ok') nextTurn(clk);
+        else if (clk.running) clockResume();
+      });
   }
   function openResults() {
     closeMenu();
@@ -1241,7 +1565,9 @@ dialog::backdrop { background: var(--scrim); }
       v => {
         if (v !== 'ok') return;
         store.del(KEY_GAME);
+        store.del(KEY_CLOCK);
         state = null;
+        Object.assign(clock, { limit: 0, remaining: 0, running: false, alerted: false });
         history = [];
         showSetup();
       });
@@ -1347,6 +1673,7 @@ dialog::backdrop { background: var(--scrim); }
     gameEl.hidden = true;
     setupEl.hidden = false;
     for (let i = 0; i < MAX_TEAMS; i++) $('team-name-' + i).value = prefs.names[i] || '';
+    $('setupTimer').innerHTML = timerFieldsHTML('setup-tl', prefs.timeLimit, prefs.timerRefill, prefs.timerSound);
     renderSetup();
   }
   function showGame() {
@@ -1355,6 +1682,7 @@ dialog::backdrop { background: var(--scrim); }
     ui.selected = null;
     ui.hot = null;
     commit();
+    renderClock(true);
     requestWakeLock();
   }
   function startGame() {
@@ -1367,11 +1695,12 @@ dialog::backdrop { background: var(--scrim); }
       teams.push({ name: raw || `${i + 1}팀`, score: 0 });
     }
     prefs.names = names;
-    savePrefs();
+    applyTimerPrefs(readTimerFields('setup-tl'));
     const start = startLayout();
     state = { teams, current: 0, streak: 0, round: 1, sticks: clone(start), start: clone(start) };
     history = [];
     showGame();
+    clockStart();
     announce(`${teams[0].name} 차례`, '1라운드 시작');
   }
   function resume() {
@@ -1379,6 +1708,9 @@ dialog::backdrop { background: var(--scrim); }
     if (!saved) { renderSetup(); return; }
     state = saved.state;
     history = saved.history;
+    // 새로고침 뒤에는 타이머를 멈춘 채로 되살림 (계속 버튼으로 이어서)
+    const c = store.get(KEY_CLOCK);
+    setClock(clockValid(c) ? c : { limit: 0, remaining: 0, alerted: false }, false);
     showGame();
     announce(`${state.teams[state.current].name} 차례`, `${state.round}라운드 이어서`);
   }
@@ -1387,6 +1719,14 @@ dialog::backdrop { background: var(--scrim); }
   $('setupForm').addEventListener('submit', ev => { ev.preventDefault(); startGame(); });
   document.addEventListener('click', ev => {
     if (!ev.target.closest('.menu-wrap')) closeMenu();
+    const pre = ev.target.closest('[data-tl-preset]');
+    if (pre) {
+      const v = +pre.dataset.tlPreset, p = pre.dataset.tlFor;
+      $(`${p}-min`).value = Math.floor(v / 60);
+      $(`${p}-sec`).value = v % 60;
+      syncPresets(p);
+      return;
+    }
     const a = ev.target.closest('[data-action]');
     if (!a || a.disabled) return;
     const act = a.dataset.action;
@@ -1403,6 +1743,9 @@ dialog::backdrop { background: var(--scrim); }
       case 'save-start': closeMenu(); saveStart(); break;
       case 'reset-start': closeMenu(); resetToStart(); break;
       case 'center': centerSticks(); break;
+      case 'timer-toggle': clockToggle(); break;
+      case 'timer-reset': if (clockOn()) clockStart(); break;
+      case 'timer-settings': openTimerSettings(); break;
       case 'results': openResults(); break;
       case 'new-game': confirmNewGame(); break;
       case 'adj': adjust(+a.dataset.i, +a.dataset.d); break;
@@ -1432,6 +1775,7 @@ dialog::backdrop { background: var(--scrim); }
       case 'KeyF': ev.preventDefault(); toggleFocus(); break;
       case 'KeyZ': ev.preventDefault(); undo(); break;
       case 'KeyC': ev.preventDefault(); centerSticks(); break;
+      case 'KeyT': if (clockOn()) { ev.preventDefault(); clockToggle(); } break;
       case 'KeyR': if (ui.selected !== null) { ev.preventDefault(); rotateSelected(); } break;
     }
   });
@@ -1442,6 +1786,7 @@ dialog::backdrop { background: var(--scrim); }
     if (data && data.state && gameValid(data.state)) {
       state = data.state;
       history = Array.isArray(data.history) ? data.history : [];
+      if (clockValid(data.clock)) setClock(data.clock, data.clock.running);
       showGame();
       if (data.focus) setFocus(true);
     } else {
@@ -1450,7 +1795,7 @@ dialog::backdrop { background: var(--scrim); }
   }
   const hot = window.claude && window.claude.hot;
   if (hot && typeof hot.snapshot === 'function') {
-    hot.snapshot(() => ({ state: state && !gameEl.hidden ? state : null, history, focus: ui.focus }));
+    hot.snapshot(() => ({ state: state && !gameEl.hidden ? state : null, history, focus: ui.focus, clock: clockSnap() }));
   }
   if (hot && typeof hot.ready === 'function') hot.ready(boot);
   else boot((hot && hot.data) || {});
